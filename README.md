@@ -27,7 +27,7 @@ rbfsdk的版本信息可以在rbf_api.h头文件中查看。
 2. 进入例程目录 <br>
 `cd rbfsdk`
 3. 设置esp32芯片型号<br>
-`idf.py set-target esp32s3`
+`idf.py set-target esp32`
 4. 编译 <br>
 `idf.py build` 
 

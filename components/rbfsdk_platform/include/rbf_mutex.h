@@ -15,7 +15,7 @@
 
 typedef void* rbf_mutex_t;
 
-rbf_mutex_t rbf_mutext_create();
+rbf_mutex_t rbf_mutex_create();
 void rbf_mutex_lock(rbf_mutex_t mutex);
 void rbf_mutex_unlock(rbf_mutex_t mutex);
 

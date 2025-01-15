@@ -21,7 +21,7 @@
 #define THREAD_SLEEP_100MS                         100
 
 
-int rbf_thread_create(size_t iThreadStackSize, 
+int rbf_thread_create(const char* name, size_t iThreadStackSize, 
                                 void *pThreadFunc, 
                                 void *pTreadArg);
 void rbf_thread_sleep(uint32_t timeoutMs);

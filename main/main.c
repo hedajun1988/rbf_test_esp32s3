@@ -269,6 +269,31 @@ static int do_test_temphumi(int argc, char **argv)
     
     return 0;
 }
+
+static struct {
+     struct arg_str *freq;
+     struct arg_end *end;
+}setfreq_args;
+
+
+static int do_test_setfreq(int argc, char **argv)
+{
+    char* setfreq_argv[4];
+    int nerrors = arg_parse(argc, argv, (void **) &setfreq_args);
+    if (nerrors != 0) 
+    {
+        arg_print_errors(stderr, setfreq_args.end, argv[0]);
+        return 0;
+    }
+
+
+    strcpy(&rbf_args[0][0], setfreq_args.freq->sval[0]);
+    setfreq_argv[0] = &rbf_args[0][0];
+
+    test_setfreq(setfreq_argv, 1);
+    
+    return 0;
+}
 /* test cmds */
 const esp_console_cmd_t cmds[] = {
     {
@@ -319,6 +344,13 @@ const esp_console_cmd_t cmds[] = {
         .command = "temphumi",
         .argtable = &temphumi_args
     },
+    {
+        .help = "set rbf frequency",
+        .hint = NULL,
+        .func = do_test_setfreq,
+        .command = "setfreq",
+        .argtable = &setfreq_args
+    },
 };
 
 esp_err_t app_console_init(void)
@@ -362,6 +394,9 @@ esp_err_t app_console_init(void)
     temphumi_args.temp_threshold = arg_str1(NULL, NULL,"<TEMP_THRES>", "temprature threshold");
     temphumi_args.humi_threshold = arg_str1(NULL, NULL,"<HUMI_THRES>", "humidity threshold");
     temphumi_args.end = arg_end(4);
+
+    setfreq_args.freq = arg_str1(NULL, NULL,"<freq>", "0:868 1:915 2:433");
+    setfreq_args.end = arg_end(1);
 
     for (int i=0; i<sizeof(cmds)/sizeof(esp_console_cmd_t); i++)
     {

@@ -12,7 +12,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
 
-rbf_mutex_t rbf_mutext_create()
+rbf_mutex_t rbf_mutex_create()
 {
     return xSemaphoreCreateMutex();
 }

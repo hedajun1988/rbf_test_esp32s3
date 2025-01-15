@@ -22,6 +22,7 @@
 #include "rbf_water_leak.h"
 
 static int s_newDevice = 0;
+RBF_Freq_t s_setFreq = RBF_FREQ_915;
 
 
 int test_rbf_dev_register_reponse(RBF_register_response_t* reponse)
@@ -51,8 +52,8 @@ int test_rbf_dev_register_reponse(RBF_register_response_t* reponse)
 
 int test_rbf_set_hub(void)
 {
-    printf("init param 868 \n");
-    rbf_set_freq(RBF_FREQ_868);
+    printf("init param freq[%d] \n", s_setFreq);
+    rbf_set_freq(s_setFreq);
     return 0;
 }
 
@@ -375,6 +376,38 @@ void test_temphumi(char *argv[], int argc)
 
         printf("temphumi [%d] set unit %d, temp_thres %d, humi_thres %d\n",no, config.temp_units, config.temp_threshold, config.humi_threshold);
         rbf_temp_humi_set(no, &config);
+    }
+}
+
+void test_setfreq(char *argv[], int argc)
+{
+    if (argc >= 1)
+    {
+        int freq_a = atoi(argv[0]);
+        switch (freq_a)
+        {
+        case 0:
+            printf("set hub frequency to 868\r\n");
+            rbf_set_freq(RBF_FREQ_868);
+            s_setFreq = RBF_FREQ_868;
+            break;
+
+        case 1:
+            printf("set hub frequency to 915\r\n");
+            rbf_set_freq(RBF_FREQ_915);
+            s_setFreq = RBF_FREQ_915;
+            break;
+
+        case 2: 
+            printf("set hub frequency to 433\r\n");
+            rbf_set_freq(RBF_FREQ_433);
+            s_setFreq = RBF_FREQ_433;
+            break;
+        
+        default:
+            printf("unknow hub frequency\r\n");
+            break;
+        }
     }
 }
 

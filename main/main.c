@@ -31,7 +31,7 @@
 #define RBF_UART_PORT          2
 
 static const char* TAG = "rbftest";
-static char rbf_args[4][10];
+static char rbf_args[10][10];
 
 
 static int rbf_port_read(unsigned char *buf, int bufsize, int timeout)
@@ -294,6 +294,47 @@ static int do_test_setfreq(int argc, char **argv)
     
     return 0;
 }
+
+static struct {
+     struct arg_lit *enable;
+     struct arg_lit *disable;
+     struct arg_str *start_no;
+     struct arg_str *count;
+     struct arg_end *end;
+}arming_args;
+
+static int do_test_setarming(int argc, char **argv)
+{
+    char* arming_argv[4];
+    int nerrors = arg_parse(argc, argv, (void **) &arming_args);
+    if (nerrors != 0) 
+    {
+        arg_print_errors(stderr, arming_args.end, argv[0]);
+        return 0;
+    }
+
+    if (arming_args.enable->count) 
+    {
+        strcpy(&rbf_args[0][0], "enable");
+        arming_argv[0] = &rbf_args[0][0];
+    }
+    else 
+    {
+        strcpy(&rbf_args[0][0], "disable");
+        arming_argv[0] = &rbf_args[0][0];
+    }
+
+    strcpy(&rbf_args[1][0], arming_args.start_no->sval[0]);
+    arming_argv[1] = &rbf_args[1][0];
+    
+    strcpy(&rbf_args[2][0], arming_args.count->sval[0]);
+    arming_argv[2] = &rbf_args[2][0];
+    
+    test_setarming(arming_argv, 3);
+    return 0;
+}
+
+
 /* test cmds */
 const esp_console_cmd_t cmds[] = {
     {
@@ -351,6 +392,13 @@ const esp_console_cmd_t cmds[] = {
         .command = "setfreq",
         .argtable = &setfreq_args
     },
+    {
+        .help = "set arming/disarming status",
+        .hint = NULL,
+        .func = do_test_setarming,
+        .command = "setarming",
+        .argtable = &arming_args
+    },
 };
 
 esp_err_t app_console_init(void)
@@ -397,6 +445,12 @@ esp_err_t app_console_init(void)
 
     setfreq_args.freq = arg_str1(NULL, NULL,"<freq>", "0:868 1:915 2:433");
     setfreq_args.end = arg_end(1);
+
+    arming_args.enable = arg_lit0("e", "enable",  "set arming state");
+    arming_args.disable = arg_lit0("d", "disable",  "set disarming state");
+    arming_args.start_no = arg_str0(NULL, NULL,"<DEV_NUM>", "start device number");
+    arming_args.count = arg_str0(NULL, NULL,  "<DEV_CNT>", "device count");
+    arming_args.end = arg_end(2);
 
     for (int i=0; i<sizeof(cmds)/sizeof(esp_console_cmd_t); i++)
     {

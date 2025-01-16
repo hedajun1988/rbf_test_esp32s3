@@ -411,6 +411,35 @@ void test_setfreq(char *argv[], int argc)
     }
 }
 
+void test_setarming(char *argv[], int argc)
+{
+    if (argc >= 3)
+    {
+        unsigned char io_list[10];
+        unsigned char count = 0;
+        RBF_io_alarm_status_t status = RBF_IO_ALARM_DISABLE;
+
+        if (strcmp(argv[0], "enable") == 0) 
+        {
+            status = RBF_IO_ALARM_ENABLE;
+        }
+
+        uint8_t no = atoi(argv[1]);
+        count = atoi(argv[2]);
+
+        printf("============set %s==============\r\n", (status ==  RBF_IO_ALARM_ENABLE) ? "arming" : "disarming");
+        for (int i = 0; i < count; i++)
+        {
+            io_list[i] = no+i;
+            printf("%d ", io_list[i]);
+        }
+        printf("\r\n=======================================\r\n");
+
+        rbf_device_io_alarm_set(io_list, count, status);
+    }
+}
+
+
 void init_rbf(char *argv[], int argc)
 {
     test_rbf_init();

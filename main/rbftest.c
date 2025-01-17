@@ -22,6 +22,7 @@
 #include "rbf_water_leak.h"
 
 static int s_newDevice = 0;
+RBF_Freq_t s_setFreq = RBF_FREQ_915;
 
 
 int test_rbf_dev_register_reponse(RBF_register_response_t* reponse)
@@ -51,8 +52,8 @@ int test_rbf_dev_register_reponse(RBF_register_response_t* reponse)
 
 int test_rbf_set_hub(void)
 {
-    printf("init param 868 \n");
-    rbf_set_freq(RBF_FREQ_868);
+    printf("init param freq[%d] \n", s_setFreq);
+    rbf_set_freq(s_setFreq);
     return 0;
 }
 
@@ -377,6 +378,67 @@ void test_temphumi(char *argv[], int argc)
         rbf_temp_humi_set(no, &config);
     }
 }
+
+void test_setfreq(char *argv[], int argc)
+{
+    if (argc >= 1)
+    {
+        int freq_a = atoi(argv[0]);
+        switch (freq_a)
+        {
+        case 0:
+            printf("set hub frequency to 868\r\n");
+            rbf_set_freq(RBF_FREQ_868);
+            s_setFreq = RBF_FREQ_868;
+            break;
+
+        case 1:
+            printf("set hub frequency to 915\r\n");
+            rbf_set_freq(RBF_FREQ_915);
+            s_setFreq = RBF_FREQ_915;
+            break;
+
+        case 2: 
+            printf("set hub frequency to 433\r\n");
+            rbf_set_freq(RBF_FREQ_433);
+            s_setFreq = RBF_FREQ_433;
+            break;
+        
+        default:
+            printf("unknow hub frequency\r\n");
+            break;
+        }
+    }
+}
+
+void test_setarming(char *argv[], int argc)
+{
+    if (argc >= 3)
+    {
+        unsigned char io_list[10];
+        unsigned char count = 0;
+        RBF_io_alarm_status_t status = RBF_IO_ALARM_DISABLE;
+
+        if (strcmp(argv[0], "enable") == 0) 
+        {
+            status = RBF_IO_ALARM_ENABLE;
+        }
+
+        uint8_t no = atoi(argv[1]);
+        count = atoi(argv[2]);
+
+        printf("============set %s==============\r\n", (status ==  RBF_IO_ALARM_ENABLE) ? "arming" : "disarming");
+        for (int i = 0; i < count; i++)
+        {
+            io_list[i] = no+i;
+            printf("%d ", io_list[i]);
+        }
+        printf("\r\n=======================================\r\n");
+
+        rbf_device_io_alarm_set(io_list, count, status);
+    }
+}
+
 
 void init_rbf(char *argv[], int argc)
 {

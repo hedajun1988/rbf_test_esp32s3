@@ -26,6 +26,8 @@ void test_list(char *argv[], int argc);
 void test_sounder(char *argv[], int argc);
 void test_pir(char *argv[], int argc);
 void test_temphumi(char *argv[], int argc);
+void test_setfreq(char *argv[], int argc);
+void test_setarming(char *argv[], int argc);
 void delete(char *argv[], int argc);
 void updev(char *argv[], int argc);
 void exit_rbf(char *argv[], int argc);

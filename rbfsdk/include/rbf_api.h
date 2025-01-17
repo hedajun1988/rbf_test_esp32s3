@@ -17,8 +17,8 @@ extern "C"
 #endif 
 
 #define RB_SDK_VERSION             0
-#define RB_SDK_REVISION            1
-#define RB_SDK_PATCH               0
+#define RB_SDK_REVISION            2
+#define RB_SDK_PATCH               1
 
 #define RBF_DEVICE_MAC_LEN         (8)         /**< RBF sub-device MAC length */
 #define RBF_DEVICE_SN_LEN          (16)        /**< RBF sub-device serial number length */

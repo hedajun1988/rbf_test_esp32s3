@@ -18,7 +18,7 @@ extern "C"
 
 #define RB_SDK_VERSION             0
 #define RB_SDK_REVISION            2
-#define RB_SDK_PATCH               1
+#define RB_SDK_PATCH               2
 
 #define RBF_DEVICE_MAC_LEN         (8)         /**< RBF sub-device MAC length */
 #define RBF_DEVICE_SN_LEN          (16)        /**< RBF sub-device serial number length */
@@ -56,7 +56,7 @@ typedef enum
     RBF_DEV_TYPE_RELAY        = 8,     /**< Weak relay */
     RBF_DEV_TYPE_WALL_SWITCH  = 9,     /**< Strong relay */
     RBF_DEV_TYPE_WATER_VALVE  = 10,     /**< Water valve */
-    RBF_DEV_TYPE_IN_SOUND     = 11,     /**< Indoor sounder */
+    RBF_DEV_TYPE_INDOOR_SIREN  = 11,    /**< Indoor siren */
     RBF_DEV_TYPE_OUT_SOUND    = 12,     /**< Outdoor sounder */
     RBF_DEV_TYPE_LED_KEYPAD   = 13,     /**< LED keypad */
     RBF_DEV_TYPE_KEYFOB       = 14,     /**< Key fob */

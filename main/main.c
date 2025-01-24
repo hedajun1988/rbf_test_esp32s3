@@ -166,7 +166,7 @@ static struct {
      struct arg_end *end;
 }sounder_args;
 
-static int do_test_sounder(int argc, char **argv)
+static int do_test_out_sounder(int argc, char **argv)
 {
     char* sounder_argv[4];
     int nerrors = arg_parse(argc, argv, (void **) &sounder_args);
@@ -185,7 +185,7 @@ static int do_test_sounder(int argc, char **argv)
         strcpy(&rbf_args[1][0], sounder_args.volume->sval[0]);
         sounder_argv[1] = &rbf_args[1][0];
 
-        test_sounder(sounder_argv, 2);
+        test_outdoor_sounder(sounder_argv, 2);
     }
     else 
     {
@@ -195,12 +195,46 @@ static int do_test_sounder(int argc, char **argv)
         strcpy(&rbf_args[2][0], sounder_args.action->sval[0]);
         sounder_argv[2] = &rbf_args[2][0];
 
-        test_sounder(sounder_argv, 3);
+        test_outdoor_sounder(sounder_argv, 3);
     }
 
-return 0;
+    return 0;
 }
 
+static int do_test_indoor_siren(int argc, char **argv)
+{
+    char* indoor_siren_argv[4];
+    int nerrors = arg_parse(argc, argv, (void **) &sounder_args);
+    if (nerrors != 0) 
+    {
+        arg_print_errors(stderr, sounder_args.end, argv[0]);
+        return 0;
+    }
+
+
+    strcpy(&rbf_args[0][0], sounder_args.no->sval[0]);
+    indoor_siren_argv[0] = &rbf_args[0][0];
+
+    if (sounder_args.volume->count > 0) 
+    {
+        strcpy(&rbf_args[1][0], sounder_args.volume->sval[0]);
+        indoor_siren_argv[1] = &rbf_args[1][0];
+
+        test_indoor_siren(indoor_siren_argv, 2);
+    }
+    else 
+    {
+        strcpy(&rbf_args[1][0], sounder_args.mode->sval[0]);
+        indoor_siren_argv[1] = &rbf_args[1][0];
+
+        strcpy(&rbf_args[2][0], sounder_args.action->sval[0]);
+        indoor_siren_argv[2] = &rbf_args[2][0];
+
+        test_indoor_siren(indoor_siren_argv, 3);
+    }
+
+    return 0;
+}
 
 static struct {
      struct arg_str *no;
@@ -335,6 +369,136 @@ static int do_test_setarming(int argc, char **argv)
 }
 
 
+static struct {
+     struct arg_str *no;
+     struct arg_str *tone_play;
+     struct arg_str *err_led;
+     struct arg_str *arm_led;
+     struct arg_str *warn_led;
+     struct arg_str *key_tone_enable;
+     struct arg_str *backlight_time;
+     struct arg_str *lock;
+     struct arg_end *end;
+}keypad_args;
+
+static int do_test_keypad(int argc, char **argv)
+{
+    char* keypad_argv[10];
+    int nerrors = arg_parse(argc, argv, (void **) &keypad_args);
+    if (nerrors != 0) 
+    {
+        arg_print_errors(stderr, keypad_args.end, argv[0]);
+        return 0;
+    }
+
+    strcpy(&rbf_args[0][0], keypad_args.no->sval[0]);
+    keypad_argv[0] = &rbf_args[0][0];
+
+    strcpy(&rbf_args[1][0], keypad_args.tone_play->sval[0]);
+    keypad_argv[1] = &rbf_args[1][0];
+    
+    strcpy(&rbf_args[2][0], keypad_args.err_led->sval[0]);
+    keypad_argv[2] = &rbf_args[2][0];
+
+    strcpy(&rbf_args[3][0], keypad_args.arm_led->sval[0]);
+    keypad_argv[3] = &rbf_args[3][0];
+
+    strcpy(&rbf_args[4][0], keypad_args.warn_led->sval[0]);
+    keypad_argv[4] = &rbf_args[4][0];
+
+    strcpy(&rbf_args[5][0], keypad_args.key_tone_enable->sval[0]);
+    keypad_argv[5] = &rbf_args[5][0];
+
+    strcpy(&rbf_args[6][0], keypad_args.backlight_time->sval[0]);
+    keypad_argv[6] = &rbf_args[6][0];
+
+    strcpy(&rbf_args[7][0], keypad_args.lock->sval[0]);
+    keypad_argv[7] = &rbf_args[7][0];
+    
+    test_keypad(keypad_argv, 8);
+    return 0;
+}
+
+static struct {
+     struct arg_str *no;
+     struct arg_str *action;
+     struct arg_end *end;
+}relay_args;
+
+static int do_test_relay(int argc, char **argv)
+{
+    char* relay_argv[4];
+    int nerrors = arg_parse(argc, argv, (void **) &relay_args);
+    if (nerrors != 0) 
+    {
+        arg_print_errors(stderr, relay_args.end, argv[0]);
+        return 0;
+    }
+
+
+    strcpy(&rbf_args[0][0], relay_args.no->sval[0]);
+    relay_argv[0] = &rbf_args[0][0];
+
+    strcpy(&rbf_args[1][0], relay_args.action->sval[0]);
+    relay_argv[1] = &rbf_args[1][0];
+
+    test_relay(relay_argv, 2);
+    return 0;
+}
+
+static int do_test_wallswitch(int argc, char **argv)
+{
+    char* wall_switch_argv[4];
+    int nerrors = arg_parse(argc, argv, (void **) &relay_args);
+    if (nerrors != 0) 
+    {
+        arg_print_errors(stderr, relay_args.end, argv[0]);
+        return 0;
+    }
+
+
+    strcpy(&rbf_args[0][0], relay_args.no->sval[0]);
+    wall_switch_argv[0] = &rbf_args[0][0];
+
+    strcpy(&rbf_args[1][0], relay_args.action->sval[0]);
+    wall_switch_argv[1] = &rbf_args[1][0];
+
+    test_wall_switch(wall_switch_argv, 2);
+    return 0;
+}
+
+
+static struct {
+     struct arg_str *no;
+     struct arg_str *action;
+     struct arg_str *lock;
+     struct arg_end *end;
+}smartplug_args;
+
+static int do_test_smartplug(int argc, char **argv)
+{
+    char* smartplug_plug[4];
+    int nerrors = arg_parse(argc, argv, (void **) &smartplug_args);
+    if (nerrors != 0) 
+    {
+        arg_print_errors(stderr, smartplug_args.end, argv[0]);
+        return 0;
+    }
+
+
+    strcpy(&rbf_args[0][0], smartplug_args.no->sval[0]);
+    smartplug_plug[0] = &rbf_args[0][0];
+
+    strcpy(&rbf_args[1][0], smartplug_args.action->sval[0]);
+    smartplug_plug[1] = &rbf_args[1][0];
+
+    strcpy(&rbf_args[2][0], smartplug_args.lock->sval[0]);
+    smartplug_plug[2] = &rbf_args[2][0];
+
+    test_smartplug(smartplug_plug, 3);
+    return 0;
+}
+
 /* test cmds */
 const esp_console_cmd_t cmds[] = {
     {
@@ -365,10 +529,17 @@ const esp_console_cmd_t cmds[] = {
         .argtable = &device_args,
     },
     {
-        .help = "sounder test",
+        .help = "Outdoor sounder test",
         .hint = NULL,
-        .func = do_test_sounder,
-        .command = "sounder",
+        .func = do_test_out_sounder,
+        .command = "outsounder",
+        .argtable = &sounder_args
+    },
+    {
+        .help = "InDoor siren test",
+        .hint = NULL,
+        .func = do_test_indoor_siren,
+        .command = "insiren",
         .argtable = &sounder_args
     },
     {
@@ -398,6 +569,34 @@ const esp_console_cmd_t cmds[] = {
         .func = do_test_setarming,
         .command = "setarming",
         .argtable = &arming_args
+    },
+    {
+        .help = "keypad test",
+        .hint = NULL,
+        .func = do_test_keypad,
+        .command = "keypad",
+        .argtable = &keypad_args
+    },
+    {
+        .help = "relay test",
+        .hint = NULL,
+        .func = do_test_relay,
+        .command = "relay",
+        .argtable = &relay_args
+    },
+    {
+        .help = "wall switch test",
+        .hint = NULL,
+        .func = do_test_wallswitch,
+        .command = "wallswitch",
+        .argtable = &relay_args
+    },
+    {
+        .help = "smart plug test",
+        .hint = NULL,
+        .func = do_test_smartplug,
+        .command = "smartplug",
+        .argtable = &smartplug_args
     },
 };
 
@@ -451,6 +650,26 @@ esp_err_t app_console_init(void)
     arming_args.start_no = arg_str0(NULL, NULL,"<DEV_NUM>", "start device number");
     arming_args.count = arg_str0(NULL, NULL,  "<DEV_CNT>", "device count");
     arming_args.end = arg_end(2);
+
+    /* keypad 0 1 1 1 2 1 0 0 */
+    keypad_args.no = arg_str1(NULL, NULL,"<DEV_NUM>", "device number");
+    keypad_args.tone_play = arg_str1(NULL, NULL,"<TONE_PLAY>", "0:none, 1:intrusion, 2:fire, 3:energy, 4:medical");
+    keypad_args.err_led = arg_str1(NULL, NULL,"<ERR_LED>", "0:off, 1:on");
+    keypad_args.arm_led = arg_str1(NULL, NULL,"<ARM_LED>", "0:off, 1:on");
+    keypad_args.warn_led = arg_str1(NULL, NULL,"<WARN_LED>", "0:off, 1:on, 2:blink");
+    keypad_args.key_tone_enable = arg_str1(NULL, NULL,"<KEY_TONE_ENABLE>", "0:disable, 1:enable");
+    keypad_args.backlight_time = arg_str1(NULL, NULL,"<BACKLIGHT_TIME>", "0:10s, 1:15s, 2:20s, 3:25s");
+    keypad_args.lock = arg_str1(NULL, NULL,"<LOCK>", "0:unlock, 1:lock");
+    keypad_args.end = arg_end(8);
+
+    relay_args.no = arg_str1(NULL, NULL,"<DEV_NUM>", "device number");
+    relay_args.action = arg_str1(NULL, NULL,"<ACTION>", "0:off, 1:on, 2: toogle");
+    relay_args.end = arg_end(2);
+
+    smartplug_args.no = arg_str1(NULL, NULL,"<DEV_NUM>", "device number");
+    smartplug_args.action = arg_str1(NULL, NULL,"<ACTION>", "0:off, 1:on, 2: toogle");
+    smartplug_args.lock = arg_str1(NULL, NULL,"<LOCK>", "0:off, 1:on");
+    smartplug_args.end = arg_end(3);
 
     for (int i=0; i<sizeof(cmds)/sizeof(esp_console_cmd_t); i++)
     {

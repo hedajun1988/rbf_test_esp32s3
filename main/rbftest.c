@@ -16,10 +16,16 @@
 #include "rbf_magnetic.h"
 #include "rbf_keyfob.h"
 #include "rbf_sounder.h"
+#include "rbf_indoor_siren.h"
 #include "rbf_pir.h"
 #include "rbf_emergency_button.h"
 #include "rbf_temphumi.h"
 #include "rbf_water_leak.h"
+#include "rbf_smoke.h"
+#include "rbf_keypad.h"
+#include "rbf_relay.h"
+#include "rbf_wall_switch.h"
+#include "rbf_smartplug.h"
 
 static int s_newDevice = 0;
 RBF_Freq_t s_setFreq = RBF_FREQ_915;
@@ -187,16 +193,131 @@ int rbf_water_leak_input_status_callback(uint8_t no, rbf_water_leak_input_status
 }
 
 
+int rbf_smoke_heartbeat_callback(uint8_t no, rbf_smoke_heartbeat_t* heartbeat)
+{
+    printf("smoke [%d] heartbeat: power %u\n", no, heartbeat->power);
+    return 0;
+}
+
+int rbf_smoke_input_status_callback(uint8_t no, rbf_smoke_input_status_t* input_status)
+{
+    printf("smoke [%d] input status:  alarm %d\n", no, input_status->alarm);
+    return 0;
+}
+
+
+int rbf_keypad_heartbeat_callback(uint8_t no, rbf_keypad_heartbeat_t* heartbeat)
+{
+    printf("keypad [%d] heartbeat: power %u\n", no, heartbeat->power);
+    return 0;
+}
+
+int rbf_keypad_alarm_callback(uint8_t no, rbf_keypad_alarm_status_t* alarm_status)
+{
+    printf("keypad [%d] emergency_alarm: %d, fire_alarm: %d, medical_alarm: %d, tamper: %d\n", no, alarm_status->emergency_alarm, alarm_status->fire_alarm,
+                                                                            alarm_status->medical_alarm, alarm_status->tamper);
+    return 0;
+}
+
+int rbf_keypad_key_input_callback(uint8_t no, uint8_t input_keys[32], uint8_t input_count)
+{
+    printf("keypad [%d]  %d keys pressed \n", no, input_count);
+    for (int i = 0; i < input_count; i++)
+    {
+        printf("key %u: %u\n", i, input_keys[i]);
+    }
+    return 0;
+}
+
+
+int rbf_indoor_siren_heartbeat_callback(uint8_t no, rbf_indoor_siren_heartbeat_t* heartbeat)
+{
+    printf("Indoor siren [%d] heartbeat: power %u\n", no, heartbeat->power);
+    return 0;
+}
+
+int rbf_indoor_siren_input_status_callback(uint8_t no, rbf_indoor_siren_input_status_t* input_status)
+{
+    printf("Indoor siren [%d] input status:  battery_fault %d\n", no, input_status->battery_fault);
+    return 0;
+}
+
+int rbf_relay_output_status_callback(uint8_t no, rbf_relay_output_status_t* output_status)
+{
+    printf("Relay [%d] output status:  %d\n", no, output_status->onoff);
+    return 0;
+}
+
+int rbf_wall_switch_heartbeat_status_callback(uint8_t no, rbf_wall_switch_heartbeat_t* heartbeat)
+{
+    printf("Wall switch [%d] output status:  %d, over volt: %d, over curr: %d, under volt: %d, over load: %d,"
+            "instantaneous voltage %lu, instantaneous current %lu, instantaneous power %lu\n", no, heartbeat->onoff,
+                                                                heartbeat->over_volt,
+                                                                heartbeat->over_curr,
+                                                                heartbeat->under_volt,
+                                                                heartbeat->over_load,
+                                                                heartbeat->inst_volt,
+                                                                heartbeat->inst_curr,
+                                                                heartbeat->inst_power);
+    return 0;
+}
+int rbf_wall_switch_output_status_callback(uint8_t no, rbf_wall_switch_output_status_t* output_status)
+{
+    printf("Wall switch [%d] output status:  %d, over volt: %d, over curr: %d, under volt: %d, over load: %d\n", no, output_status->onoff,
+                                                                output_status->over_volt,
+                                                                output_status->over_curr,
+                                                                output_status->under_volt,
+                                                                output_status->over_load);
+    return 0;
+}
+
+
+
+int rbf_smartplug_heartbeat_status_callback(uint8_t no, rbf_smartplug_heartbeat_t* heartbeat)
+{
+    printf("Smartplug [%d] heartbeat status:  %d, over volt: %d, over curr: %d, under volt: %d, over load: %d, lock: %d,"
+            "instantaneous voltage %lu, instantaneous current %lu, instantaneous power %lu,"
+            "runtime %lu, Cumulative power %lu\n", no, heartbeat->onoff,
+                                                                heartbeat->over_volt,
+                                                                heartbeat->over_curr,
+                                                                heartbeat->under_volt,
+                                                                heartbeat->over_load,
+                                                                heartbeat->lock,
+                                                                heartbeat->inst_volt,
+                                                                heartbeat->inst_curr,
+                                                                heartbeat->inst_power,
+                                                                heartbeat->run_time,
+                                                                heartbeat->cumu_power);
+    return 0;
+}
+
+int rbf_smartplug_output_status_callback(uint8_t no, rbf_smartplug_output_status_t* output_status)
+{
+    printf("Smartplug [%d] output status:  %d, over volt: %d, over curr: %d, under volt: %d, over load: %d, lock: %d\n", no, output_status->onoff,
+                                                                output_status->over_volt,
+                                                                output_status->over_curr,
+                                                                output_status->under_volt,
+                                                                output_status->over_load,
+                                                                output_status->lock);
+    return 0;
+}
+
 int test_rbf_init(void)
 {
     RBF_evt_callbacks_t cbs = {0};
     rbf_magnetic_callbacks_t mc_cbs = {0};
     rbf_keyfob_callbacks_t keyfob_cbs = {0};
     rbf_sounder_callbacks_t sounder_cbs = {0};
+    rbf_indoor_siren_callbacks_t indoor_siren_cbs = {0};
     rbf_pir_callbacks_t pir_cbs = {0};
     rbf_emergency_button_callbacks_t emergency_button_cbs = {0};
     rbf_temp_humi_callbacks_t temp_humi_cbs = {0};
     rbf_water_leak_callbacks_t water_leak_cbs = {0};
+    rbf_smoke_callbacks_t smoke_cbs = {0};
+    rbf_keypad_callbacks_t keypad_cbs = {0};
+    rbf_relay_callbacks_t relay_cbs = {0};
+    rbf_wall_switch_callbacks_t wall_switch_cbs = {0};
+    rbf_smartplug_callbacks_t smartplug_cbs = {0};
 
     rbf_init();
 
@@ -233,6 +354,30 @@ int test_rbf_init(void)
     water_leak_cbs.hb_cb = &rbf_water_leak_heartbeat_callback;
     water_leak_cbs.input_status_cb = &rbf_water_leak_input_status_callback;
     rbf_water_leak_register_callbacks(&water_leak_cbs);
+
+    smoke_cbs.hb_cb = &rbf_smoke_heartbeat_callback;
+    smoke_cbs.input_status_cb = &rbf_smoke_input_status_callback;
+    rbf_smoke_register_callbacks(&smoke_cbs);
+
+    keypad_cbs.hb_cb = &rbf_keypad_heartbeat_callback;
+    keypad_cbs.alarm_cb = &rbf_keypad_alarm_callback;
+    keypad_cbs.key_input_cb = &rbf_keypad_key_input_callback;
+    rbf_keypad_register_callbacks(&keypad_cbs);
+
+    indoor_siren_cbs.hb_cb = &rbf_indoor_siren_heartbeat_callback;
+    indoor_siren_cbs.input_status_cb = &rbf_indoor_siren_input_status_callback;
+    rbf_indoor_siren_register_callbacks(&indoor_siren_cbs);
+
+    relay_cbs.output_status_cb = &rbf_relay_output_status_callback;
+    rbf_relay_register_callbacks(&relay_cbs);
+
+    wall_switch_cbs.hb_cb = &rbf_wall_switch_heartbeat_status_callback;
+    wall_switch_cbs.output_status_cb = &rbf_wall_switch_output_status_callback;
+    rbf_wall_switch_register_callbacks(&wall_switch_cbs);
+
+    smartplug_cbs.hb_cb = &rbf_smartplug_heartbeat_status_callback;
+    smartplug_cbs.output_status_cb = &rbf_smartplug_output_status_callback;
+    rbf_smartplug_register_callbacks(&smartplug_cbs);
     return 0;
 }
 
@@ -327,7 +472,7 @@ void test_list(char *argv[], int argc)
     rbf_get_register_info();
 }
 
-void test_sounder(char *argv[], int argc)
+void test_outdoor_sounder(char *argv[], int argc)
 {
     unsigned char sounder_list[1];
     RBF_sounder_param_t souner_param;
@@ -338,14 +483,36 @@ void test_sounder(char *argv[], int argc)
     {
         souner_param.mode = atoi(argv[1]);
         souner_param.action = atoi(argv[2]);
-        printf("sounder [%d] control: mode %d, action %d\n",sounder_list[0], souner_param.mode, souner_param.action);
+        printf("Outdoor sounder [%d] control: mode %d, action %d\n",sounder_list[0], souner_param.mode, souner_param.action);
         rbf_sounder_boardcast_control(&sounder_list[0], 1, &souner_param);
     }
     else 
     {
         RBF_sounder_volume_t volume = (RBF_sounder_volume_t)atoi(argv[1]);
-        printf("sounder [%d] set volume %d\n",sounder_list[0], volume);
+        printf("Outdoor sounder [%d] set volume %d\n",sounder_list[0], volume);
         rbf_sounder_volume_set(sounder_list[0], volume);
+    }
+}
+
+void test_indoor_siren(char *argv[], int argc)
+{
+    unsigned char indoor_siren_list[1];
+    RBF_indoor_siren_param_t indoor_siren_param;
+
+    indoor_siren_list[0] = atoi(argv[0]);
+
+    if (argc >= 3)
+    {
+        indoor_siren_param.mode = atoi(argv[1]);
+        indoor_siren_param.action = atoi(argv[2]);
+        printf("Indoor siren [%d] control: mode %d, action %d\n",indoor_siren_list[0], indoor_siren_param.mode, indoor_siren_param.action);
+        rbf_indoor_siren_boardcast_control(&indoor_siren_list[0], 1, &indoor_siren_param);
+    }
+    else 
+    {
+        RBF_indoor_siren_volume_t volume = (RBF_indoor_siren_volume_t)atoi(argv[1]);
+        printf("Indoor siren [%d] set volume %d\n",indoor_siren_list[0], volume);
+        rbf_indoor_siren_volume_set(indoor_siren_list[0], volume);
     }
 }
 
@@ -439,6 +606,108 @@ void test_setarming(char *argv[], int argc)
     }
 }
 
+
+
+void test_keypad(char *argv[], int argc)
+{
+    if (argc >= 8)
+    {
+        rbf_keypad_settings_t settings = {0};
+        uint8_t no = atoi(argv[0]);
+
+        settings.alarm_tone_play = atoi(argv[1]);
+        settings.err_led_state = atoi(argv[2]);
+        settings.arm_led_state = atoi(argv[3]);
+        settings.warn_led_state = atoi(argv[4]);
+        settings.enable_key_tone = atoi(argv[5]);
+        settings.backlight_time = atoi(argv[6]);
+        settings.lock_state = atoi(argv[7]);
+
+        printf("set keypad %d: tone play %d, error led %d, arm led %d, warn led %d, key tone %d, backlight time %d, lock %d\r\n", no, settings.alarm_tone_play,
+                                                            settings.err_led_state,
+                                                            settings.arm_led_state,
+                                                            settings.warn_led_state,
+                                                            settings.enable_key_tone,
+                                                            settings.backlight_time,
+                                                            settings.lock_state);
+        rbf_keypad_set(no, &settings);
+    }
+}
+
+void test_relay(char *argv[], int argc)
+{
+    if (argc >= 2)
+    {
+        rbf_relay_ctrl_t ctrl = {0};
+        uint8_t no = atoi(argv[0]);
+        uint8_t action = atoi(argv[1]);
+
+        if (action == 0) {
+            ctrl.action = RBF_RELAY_ACTION_OFF;
+            printf("relay [%d] set off\r\n", no);
+            rbf_relay_ctrl(no, &ctrl);
+        } else if (action == 1) {
+            ctrl.action = RBF_RELAY_ACTION_ON;
+            printf("relay [%d] set on\r\n", no);
+            rbf_relay_ctrl(no, &ctrl);
+        } else if (action == 2) {
+            ctrl.action = RBF_RELAY_ACTION_TOOGLE;
+            printf("relay [%d] set toogle\r\n", no);
+            rbf_relay_ctrl(no, &ctrl);
+        }
+    }
+}
+
+
+void test_wall_switch(char *argv[], int argc)
+{
+    if (argc >= 2)
+    {
+        rbf_wall_switch_ctrl_t ctrl = {0};
+        uint8_t no = atoi(argv[0]);
+        uint8_t action = atoi(argv[1]);
+
+        if (action == 0) {
+            ctrl.action = RBF_RELAY_ACTION_OFF;
+            printf("wall_switch [%d] set off\r\n", no);
+            rbf_wall_switch_ctrl(no, &ctrl);
+        } else if (action == 1) {
+            ctrl.action = RBF_RELAY_ACTION_ON;
+            printf("wall_switch [%d] set on\r\n", no);
+            rbf_wall_switch_ctrl(no, &ctrl);
+        } else if (action == 2) {
+            ctrl.action = RBF_RELAY_ACTION_TOOGLE;
+            printf("wall_switch [%d] set toogle\r\n", no);
+            rbf_wall_switch_ctrl(no, &ctrl);
+        }
+    }
+}
+
+void test_smartplug(char *argv[], int argc)
+{
+    if (argc >= 3)
+    {
+        rbf_smartplug_ctrl_t ctrl = {0};
+        uint8_t no = atoi(argv[0]);
+        uint8_t action = atoi(argv[1]);
+        uint8_t lock = atoi(argv[2]);
+
+        ctrl.lock = lock;
+        if (action == 0) {
+            ctrl.action = RBF_SMARTPLUG_ACTION_OFF;
+            printf("smartplug [%d] set off,lock[%d]\r\n", no, lock);
+            rbf_smartplug_ctrl(no, &ctrl);
+        } else if (action == 1) {
+            ctrl.action = RBF_SMARTPLUG_ACTION_ON;
+            printf("smartplug [%d] set on,lock[%d]\r\n", no, lock);
+            rbf_smartplug_ctrl(no, &ctrl);
+        } else if (action == 2) {
+            ctrl.action = RBF_SMARTPLUG_ACTION_TOOGLE;
+            printf("smartplug [%d] set toogle,lock[%d]\r\n", no, lock);
+            rbf_smartplug_ctrl(no, &ctrl);
+        }
+    }
+}
 
 void init_rbf(char *argv[], int argc)
 {

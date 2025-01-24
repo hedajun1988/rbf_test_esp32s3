@@ -29,7 +29,7 @@ typedef struct
 
 
 /**
- * @brief 门磁输入状态信息
+ * @brief sounder status information
  * 
  */
 typedef struct 

@@ -18,6 +18,12 @@ extern "C"
 {
 #endif
 
+typedef struct 
+{
+    uint8_t onoff;  /**< Relay output status:  0-off, 1-on */
+    uint8_t rssi;  /**< Relay RSSI */
+}rbf_relay_heartbeat_t;
+
 /**
  * @brief Relay output status
  * 
@@ -26,6 +32,13 @@ typedef struct
 {
     uint8_t onoff;  /**< Relay output status:  0-off, 1-on */
 }rbf_relay_output_status_t;
+
+/**
+ * @brief Relay heartbeat callback handler
+ * @param no Device registration number
+ * @param heartbeat Heartbeat information
+ */
+typedef int (*rbf_relay_heartbeat_callback_t)(uint8_t no, rbf_relay_heartbeat_t* heartbeat);  
 
 
 /**
@@ -41,6 +54,7 @@ typedef int (*rbf_relay_output_status_callback_t)(uint8_t no, rbf_relay_output_s
  */
 typedef struct 
 {
+    rbf_relay_heartbeat_callback_t hb_cb;
     rbf_relay_output_status_callback_t output_status_cb;  
 }rbf_relay_callbacks_t;
 

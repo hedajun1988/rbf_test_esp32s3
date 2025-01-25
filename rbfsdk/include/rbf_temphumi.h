@@ -28,6 +28,7 @@ typedef struct
     uint8_t power;  /**< Temperature and humidity sensor level 0-100 */
     float temp;  /**< Temperature */
     float humi;  /**< Humidity */
+    uint8_t rssi; /**< Sensor RSSI */
 }rbf_temp_humi_heartbeat_t;
 
 /**

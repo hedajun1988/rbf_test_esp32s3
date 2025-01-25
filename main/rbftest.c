@@ -79,6 +79,20 @@ int test_rbf_dev_info_handle(RBF_dev_id_t* ids, int count)
     return 0;
 }
 
+int test_rbf_ver_info_handle(RBF_hub_sw_ver_t* ver)
+{
+    printf("Get hub version: V%d.%d.%d_build%02d%02d%02d%02d\r\n", 
+             ver->major, ver->sub, ver->patch,
+             ver->build_year, ver->build_month, ver->build_date, ver->build_no);
+    return 0;
+}
+
+int test_rbf_noise_info_handle(RBF_hub_noise_t* noise)
+{
+    printf("Get hub noise: real time noise %d, average noise %d\r\n", noise->realtime_rssi, noise->avg_rssi);
+    return 0;
+}
+
 int rbf_magnetic_heartbeat_callback(uint8_t no, rbf_magnetic_heartbeat_t* heartbeat)
 {
     printf("magnetic [%d] heartbeat: power %u\n", no, heartbeat->power);
@@ -242,6 +256,13 @@ int rbf_indoor_siren_input_status_callback(uint8_t no, rbf_indoor_siren_input_st
     return 0;
 }
 
+int rbf_relay_heartbeat_callback(uint8_t no, rbf_relay_heartbeat_t* heartbeat)
+{
+    printf("Relay [%d] output status:  %d, RSSI: %d\n", no, heartbeat->onoff, heartbeat->rssi);
+    return 0;
+}
+
+
 int rbf_relay_output_status_callback(uint8_t no, rbf_relay_output_status_t* output_status)
 {
     printf("Relay [%d] output status:  %d\n", no, output_status->onoff);
@@ -325,6 +346,8 @@ int test_rbf_init(void)
     cbs.rbf_hub_sync_handle = &test_rbf_set_hub;
     cbs.rbf_hub_event_handle = &test_rbf_dev_hub_event;
     cbs.rbf_dev_register_info_handle = &test_rbf_dev_info_handle;
+    cbs.rbf_hub_ver_handle = &test_rbf_ver_info_handle;
+    cbs.rbf_get_hub_noise = &test_rbf_noise_info_handle;
     rbf_register_evt_callback(&cbs);
 
     mc_cbs.hb_cb = &rbf_magnetic_heartbeat_callback;
@@ -368,6 +391,7 @@ int test_rbf_init(void)
     indoor_siren_cbs.input_status_cb = &rbf_indoor_siren_input_status_callback;
     rbf_indoor_siren_register_callbacks(&indoor_siren_cbs);
 
+    relay_cbs.hb_cb = &rbf_relay_heartbeat_callback;
     relay_cbs.output_status_cb = &rbf_relay_output_status_callback;
     rbf_relay_register_callbacks(&relay_cbs);
 
@@ -416,11 +440,65 @@ void test_enroll(char *argv[], int argc)
 {
     test_start_hub_enroll();
 }
+
 void test_stop_enroll(char *argv[], int argc)
 {
     test_stop_hub_enroll();
 }
 
+void test_findme_start(char *argv[], int argc)
+{
+    if (argc >= 2)
+    {
+        RBF_dev_id_t ids;
+        ids.cat = (RBF_dev_cat_t)atoi(argv[0]);
+        ids.no = atoi(argv[1]);
+
+        printf("findme start: catid %d, no %d\n", ids.cat, ids.no);
+        rbf_start_findme(&ids, 1);
+    }
+}
+
+
+
+
+void test_findme_stop(char *argv[], int argc)
+{
+    if (argc >= 2)
+    {
+        RBF_dev_id_t ids;
+        ids.cat = (RBF_dev_cat_t)atoi(argv[0]);
+        ids.no = atoi(argv[1]);
+
+        printf("findme stop: catid %d, no %d\n", ids.cat, ids.no);
+        rbf_stop_findme(&ids, 1);
+    }
+}
+
+void test_rssi_start(char *argv[], int argc)
+{
+    if (argc >= 2)
+    {
+        RBF_dev_id_t ids;
+        ids.cat = (RBF_dev_cat_t)atoi(argv[0]);
+        ids.no = atoi(argv[1]);
+
+        printf("rssi start: catid %d, no %d\n", ids.cat, ids.no);
+        rbf_start_rssi(&ids, 1);
+    }
+}
+void test_rssi_stop(char *argv[], int argc)
+{
+    if (argc >= 2)
+    {
+        RBF_dev_id_t ids;
+        ids.cat = (RBF_dev_cat_t)atoi(argv[0]);
+        ids.no = atoi(argv[1]);
+
+        printf("rssi stop: catid %d, no %d\n", ids.cat, ids.no);
+        rbf_stop_rssi(&ids, 1);
+    }
+}
 
 void test_ledset(char *argv[], int argc)
 {
@@ -708,6 +786,17 @@ void test_smartplug(char *argv[], int argc)
         }
     }
 }
+
+void test_hub_get_version(void)
+{
+    rbf_get_hub_version();
+}
+
+void test_hub_get_noise(void)
+{
+    rbf_get_hub_noise();
+}
+
 
 void init_rbf(char *argv[], int argc)
 {

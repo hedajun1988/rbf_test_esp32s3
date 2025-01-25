@@ -83,6 +83,70 @@ static int do_test_enroll(int argc, char **argv)
 static struct {
      struct arg_str *cat_id;
      struct arg_str *no;
+     struct arg_lit *stop;
+     struct arg_end *end;
+}boardcast_args;
+
+static int do_test_findme(int argc, char **argv)
+{
+    char* findme_argv[4];
+    int nerrors = arg_parse(argc, argv, (void **) &boardcast_args);
+    if (nerrors != 0) 
+    {
+        arg_print_errors(stderr, boardcast_args.end, argv[0]);
+        return 0;
+    }
+
+    strcpy(&rbf_args[0][0], boardcast_args.cat_id->sval[0]);
+    findme_argv[0] = &rbf_args[0][0];
+
+    strcpy(&rbf_args[1][0], boardcast_args.no->sval[0]);
+    findme_argv[1] = &rbf_args[1][0];
+
+    if (boardcast_args.stop->count) 
+    {
+        test_findme_stop(findme_argv, 2);
+    }
+    else 
+    {
+        test_findme_start(findme_argv, 2);
+    }
+
+    return 0;
+}
+
+static int do_test_rssi(int argc, char **argv)
+{
+    char* rssi_argv[4];
+    int nerrors = arg_parse(argc, argv, (void **) &boardcast_args);
+    if (nerrors != 0) 
+    {
+        arg_print_errors(stderr, boardcast_args.end, argv[0]);
+        return 0;
+    }
+
+    strcpy(&rbf_args[0][0], boardcast_args.cat_id->sval[0]);
+    rssi_argv[0] = &rbf_args[0][0];
+
+    strcpy(&rbf_args[1][0], boardcast_args.no->sval[0]);
+    rssi_argv[1] = &rbf_args[1][0];
+
+    if (boardcast_args.stop->count) 
+    {
+        test_rssi_stop(rssi_argv, 2);
+    }
+    else 
+    {
+        test_rssi_start(rssi_argv, 2);
+    }
+
+    return 0;
+}
+
+
+static struct {
+     struct arg_str *cat_id;
+     struct arg_str *no;
      struct arg_str *led_mode;
      struct arg_str *led_duration;
      struct arg_end *end;
@@ -499,6 +563,34 @@ static int do_test_smartplug(int argc, char **argv)
     return 0;
 }
 
+static struct {
+     struct arg_lit *version;
+     struct arg_lit *noise;
+     struct arg_end *end;
+}hub_args;
+
+static int do_test_hub(int argc, char **argv)
+{
+    int nerrors = arg_parse(argc, argv, (void **) &hub_args);
+    if (nerrors != 0) 
+    {
+        arg_print_errors(stderr, hub_args.end, argv[0]);
+        return 0;
+    }
+
+    if (hub_args.version->count) 
+    {
+        test_hub_get_version();
+    }
+
+    if (hub_args.noise->count) 
+    {
+        test_hub_get_noise();
+    }
+    
+    return 0;
+}
+
 /* test cmds */
 const esp_console_cmd_t cmds[] = {
     {
@@ -513,6 +605,27 @@ const esp_console_cmd_t cmds[] = {
         .func = do_test_enroll,
         .command = "enroll",
         .argtable = &enroll_args,
+    },
+    {
+        .help = "send findme boardcast",
+        .hint = NULL,
+        .func = do_test_findme,
+        .command = "findme",
+        .argtable = &boardcast_args,
+    },
+    {
+        .help = "send rssi test boardcast",
+        .hint = NULL,
+        .func = do_test_rssi,
+        .command = "rssi",
+        .argtable = &boardcast_args,
+    },
+    {
+        .help = "hub set/get information",
+        .hint = NULL,
+        .func = do_test_hub,
+        .command = "hub",
+        .argtable = &hub_args,
     },
     {
         .help = "led indicate set",
@@ -613,7 +726,16 @@ esp_err_t app_console_init(void)
     enroll_args.stop = arg_lit0("s", "stop", "stop enroll");
     enroll_args.end = arg_end(2);
 
-    led_args.cat_id = arg_str1(NULL, NULL,"<CAT_ID>", "cat id");
+    boardcast_args.cat_id = arg_str1(NULL, NULL,"<CAT_ID>", "cat id: 1-io 2-sounder 3-keypad 4-keyfob");
+    boardcast_args.no = arg_str1(NULL, NULL,"<DEV_NUM>", "device number");
+    boardcast_args.stop = arg_lit0("s", "stop", "stop");
+    boardcast_args.end = arg_end(3);
+    
+    hub_args.version = arg_lit0("v", "version","HUB version");
+    hub_args.noise = arg_lit0("n", "noise", "HUB noise");
+    hub_args.end = arg_end(2);
+
+    led_args.cat_id = arg_str1(NULL, NULL,"<CAT_ID>", "cat id: 1-io 2-sounder 3-keypad 4-keyfob");
     led_args.no = arg_str1(NULL, NULL,"<DEV_NUM>", "device number");
     led_args.led_mode = arg_str1(NULL, NULL,"<MODE>", "led mode");
     led_args.led_duration = arg_str1(NULL, NULL,"<DURATION>", "led duration");
@@ -621,7 +743,7 @@ esp_err_t app_console_init(void)
 
     device_args.delete = arg_lit0("d", "delete",  "delete devices");
     device_args.all = arg_lit0("a", "all",  "delete all devices");
-    device_args.cat_id = arg_str0(NULL, NULL,"<CAT_ID>", "cat id");
+    device_args.cat_id = arg_str0(NULL, NULL,"<CAT_ID>", "cat id: 1-io 2-sounder 3-keypad 4-keyfob");
     device_args.no = arg_str0(NULL, NULL,"<DEV_NUM>", "device number");
     device_args.end = arg_end(2);
 

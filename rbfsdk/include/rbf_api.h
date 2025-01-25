@@ -11,6 +11,8 @@
 #ifndef RBF_API_H
 #define RBF_API_H
 
+#include <stdint.h>
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -18,7 +20,7 @@ extern "C"
 
 #define RB_SDK_VERSION             0
 #define RB_SDK_REVISION            2
-#define RB_SDK_PATCH               2
+#define RB_SDK_PATCH               3
 
 #define RBF_DEVICE_MAC_LEN         (8)         /**< RBF sub-device MAC length */
 #define RBF_DEVICE_SN_LEN          (16)        /**< RBF sub-device serial number length */
@@ -206,6 +208,25 @@ typedef struct
 }BBF_hub_event_t;
 
 
+
+typedef struct 
+{
+    uint8_t major;
+    uint8_t sub;
+    uint8_t patch;
+    uint8_t build_year;
+    uint8_t build_month;
+    uint8_t build_date;
+    uint8_t build_no;
+}RBF_hub_sw_ver_t;
+
+
+typedef struct
+{
+    uint8_t realtime_rssi; 
+    uint8_t avg_rssi;     
+} RBF_hub_noise_t;
+
 /**
  * @brief HUB  event callback functions
  * 
@@ -239,6 +260,20 @@ typedef struct
      * to the hub via rbf_get_register_info()
      */
     int (*rbf_dev_register_info_handle)(RBF_dev_id_t* ids, int count);   
+
+
+    /**
+     * @brief Callback for hub software version information response when you send a query request
+     * by rbf_get_hub_version()
+     */
+    int (*rbf_hub_ver_handle)(RBF_hub_sw_ver_t* ver);
+
+
+    /**
+     * @brief Callback for hub noise information response when you send a query request
+     * by rbf_get_hub_version()
+     */
+    int (*rbf_get_hub_noise)(RBF_hub_noise_t* noise);
 }RBF_evt_callbacks_t;
 
 /**
@@ -344,7 +379,6 @@ int rbf_device_led_indicate_set(RBF_dev_id_t* id, RBF_led_indicate_t* indicate);
  * 
  * @param ids  List of RBF devices to enable Find Me
  * @param count Number of devices in the list to enable Find Me
- * @param retry Retry
  * @return int 0： Successfully enable Find Me mode, -1: Failed to enable Find Me mode
  * @note Find Me broadcast is a bidirectional broadcast. If a device does not respond after the broadcast, a retransmission will be
  *  initiated based on the retry count until a response is successfully received
@@ -355,10 +389,10 @@ int rbf_device_led_indicate_set(RBF_dev_id_t* id, RBF_led_indicate_t* indicate);
  * ids[0].no = 1;
  * ids[1].type = RBF_DEV_IO;
  * ids[1].no = 2;
- * rbf_start_findme(ids, 2, 2);
+ * rbf_start_findme(ids, 2);
  * @endcode
  */
-int rbf_start_findme(RBF_dev_id_t* ids, unsigned char count, unsigned char retry);
+int rbf_start_findme(RBF_dev_id_t* ids, unsigned char count);
 
 
 /**
@@ -381,7 +415,8 @@ int rbf_stop_findme(RBF_dev_id_t* ids, unsigned char count);
 
 
 /**
- * @brief Enable RSSI broadcast
+ * @brief Enable RSSI broadcast,Increase the frequency of sending heartbeats for the device. 
+ * This interface is generally used to test signal strength during installation and deployment.
  * 
  * @param ids List of RBF devices to enable RSSI broadcast
  * @param count Number of devices in the list to enable RSSI broadcast
@@ -440,6 +475,25 @@ int rbf_device_io_alarm_set(unsigned char* io_list, unsigned char count, RBF_io_
  * @return int 0: Setting successful, -1: Setting failed
  */
 int rbf_set_freq(RBF_Freq_t freq);
+
+
+/**
+ * @brief Get hub software version
+ * 
+ * @return int int 0: successful, -1: failed
+ * @note This function just only send get hub version request and 
+ * the version info will be returned in the callback function.
+ */
+int rbf_get_hub_version(void);
+
+/**
+ * @brief Get hub software noise
+ * 
+ * @return int int 0: successful, -1: failed
+ * @note This function just only send get hub noise request and 
+ * the noise info will be returned in the callback function.
+ */
+int rbf_get_hub_noise(void);
 
 #ifdef __cplusplus
 }

@@ -26,6 +26,7 @@ extern "C"
 typedef struct 
 {
     uint8_t power;  /**< Emergency Button level 0-100 */
+    uint8_t rssi;   /**< Emergency Button RSSI */
 }rbf_emergency_button_heartbeat_t;
 
 

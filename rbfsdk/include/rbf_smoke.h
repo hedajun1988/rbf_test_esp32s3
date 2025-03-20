@@ -25,7 +25,7 @@ extern "C"
 typedef struct 
 {
     uint8_t power;  /**< Smoke sensor battery level 0-100 */
-    uint8_t rssi;  /**< Smoke sensor RSSI */
+    int32_t rssi;  /**< Smoke sensor RSSI */
 }rbf_smoke_heartbeat_t;
 
 /**

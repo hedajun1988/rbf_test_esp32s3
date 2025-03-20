@@ -25,7 +25,7 @@ extern "C"
 typedef struct 
 {
     uint8_t power;  /**<  Outdoor siren battery level 0-100 */
-    uint8_t rssi;  /**< Outdoor siren RSSI */
+    int32_t rssi;  /**< Outdoor siren RSSI */
 }rbf_sounder_heartbeat_t;
 
 

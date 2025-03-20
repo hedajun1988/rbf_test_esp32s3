@@ -26,7 +26,7 @@ extern "C"
 typedef struct 
 {
     uint8_t power;  /**< PIR sensor battery level 0-100 */
-    uint8_t rssi;   /**< PIR sensor RSSI */
+    int32_t rssi;   /**< PIR sensor RSSI */
 }rbf_pir_heartbeat_t;
 
 

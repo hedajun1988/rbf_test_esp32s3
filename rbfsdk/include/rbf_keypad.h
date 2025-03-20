@@ -26,7 +26,7 @@ extern "C"
 typedef struct 
 {
     uint8_t power;  /**< keypad battery level 0-100 */
-    uint8_t rssi;   /**< keypad RSSI */
+    int32_t rssi;   /**< keypad RSSI */
 }rbf_keypad_heartbeat_t;
 
 

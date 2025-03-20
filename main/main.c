@@ -27,8 +27,16 @@
 #include "driver/uart.h"
 
 #include "rbf_api.h"
+#define  CONFIG_RPC_ENABLE          0
+
 
 #define RBF_UART_PORT          2
+
+#if defined(CONFIG_RPC_ENABLE) && (CONFIG_RPC_ENABLE == 1)
+#include "rpc.h"
+#define RPC_UART_PORT        1
+rpc_helper_t rpc_helper;
+#endif
 
 static const char* TAG = "rbftest";
 static char rbf_args[10][10];
@@ -44,6 +52,26 @@ static int rbf_port_write(unsigned char *data, int dataLen)
 {
     return uart_write_bytes(RBF_UART_PORT, (const char *) data, dataLen);
 }
+
+#if defined(CONFIG_RPC_ENABLE) && (CONFIG_RPC_ENABLE == 1)
+
+static int rpc_read(uint8_t *buf, uint32_t bufsize, uint32_t timeout)
+{
+    int len = uart_read_bytes(RPC_UART_PORT, buf, bufsize, timeout / portTICK_PERIOD_MS);
+    return len;
+}
+
+static int rpc_write(uint8_t *data, uint32_t dataLen)
+{
+    return uart_write_bytes(RPC_UART_PORT, (const char *) data, dataLen);
+}
+
+static void rbf_port_reset()
+{
+    rpc_module_reset();
+}
+
+#endif
 
 static int do_test_init(int argc, char **argv)
 {
@@ -591,6 +619,32 @@ static int do_test_hub(int argc, char **argv)
     return 0;
 }
 
+
+
+static struct {
+     struct arg_lit *start;
+     struct arg_end *end;
+}ota_args;
+
+static int do_test_ota(int argc, char **argv)
+{
+    char* ota[1];
+    int nerrors = arg_parse(argc, argv, (void **) &ota_args);
+    if (nerrors != 0) 
+    {
+        arg_print_errors(stderr, ota_args.end, argv[0]);
+        return 0;
+    }
+
+    if (ota_args.start->count) 
+    {
+        strcpy(&rbf_args[0][0], "start");
+        ota[0] = &rbf_args[0][0];
+    }
+
+    test_ota(ota, 1);
+    return 0;
+}
 /* test cmds */
 const esp_console_cmd_t cmds[] = {
     {
@@ -711,6 +765,13 @@ const esp_console_cmd_t cmds[] = {
         .command = "smartplug",
         .argtable = &smartplug_args
     },
+    {
+        .help = "ota test",
+        .hint = NULL,
+        .func = do_test_ota,
+        .command = "ota",
+        .argtable = &ota_args
+    },
 };
 
 esp_err_t app_console_init(void)
@@ -793,6 +854,9 @@ esp_err_t app_console_init(void)
     smartplug_args.lock = arg_str1(NULL, NULL,"<LOCK>", "0:off, 1:on");
     smartplug_args.end = arg_end(3);
 
+    ota_args.start = arg_lit0(NULL, "start",  "start ota upgrade");
+    ota_args.end = arg_end(1);
+
     for (int i=0; i<sizeof(cmds)/sizeof(esp_console_cmd_t); i++)
     {
         ESP_ERROR_CHECK(esp_console_cmd_register(&cmds[i]));
@@ -806,7 +870,7 @@ esp_err_t app_rbf_port_config(void)
 {
     RBF_port_t rbf_port = {0};
 
-    if (uart_driver_install(2, 2 * 1024, 0, 0, NULL, 0) != ESP_OK) {
+    if (uart_driver_install(RBF_UART_PORT, 2 * 1024, 0, 0, NULL, 0) != ESP_OK) {
         ESP_LOGE(TAG, "Driver installation failed");
         return ESP_FAIL;
     }
@@ -825,10 +889,37 @@ esp_err_t app_rbf_port_config(void)
      // We have a driver now installed so set up the read/write functions to use driver also.
     rbf_port.read = &rbf_port_read;
     rbf_port.write = &rbf_port_write;
+#if defined(CONFIG_RPC_ENABLE) && (CONFIG_RPC_ENABLE == 1)
+    rbf_port.reset = &rbf_port_reset;
+#endif
     rbf_set_port(&rbf_port);
     return ESP_OK;
 }
 
+#if defined(CONFIG_RPC_ENABLE) && (CONFIG_RPC_ENABLE == 1)
+
+esp_err_t app_rpc_port_config(void)
+{
+    if (uart_driver_install(RPC_UART_PORT, 2 * 1024, 0, 0, NULL, 0) != ESP_OK) {
+        ESP_LOGE(TAG, "Driver installation failed");
+        return ESP_FAIL;
+    }
+
+    uart_config_t uart_config = {
+        .baud_rate = 115200,
+        .data_bits = UART_DATA_8_BITS,
+        .parity    = UART_PARITY_DISABLE,
+        .stop_bits = UART_STOP_BITS_1,
+        .flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
+        .source_clk = UART_SCLK_DEFAULT,
+    };
+
+    ESP_ERROR_CHECK(uart_param_config(RPC_UART_PORT, &uart_config));
+    ESP_ERROR_CHECK(uart_set_pin(RPC_UART_PORT, 17, 18, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE));
+    return ESP_OK;
+}
+
+#endif
 
 /**
  * @brief This is a freeRTOS thread entry point that starts our test routine.
@@ -838,6 +929,12 @@ void app_main(void)
 {
     printf("RBF Test!\n");
 
+#if defined(CONFIG_RPC_ENABLE) && (CONFIG_RPC_ENABLE == 1)
+    app_rpc_port_config();
+    rpc_helper.read = &rpc_read;
+    rpc_helper.write = &rpc_write;
+    rpc_init(&rpc_helper);
+#endif
     /* Configure the RBF serial port. */
     app_rbf_port_config();
     /* Initialize the test console. */

@@ -31,7 +31,7 @@ typedef struct
     uint32_t inst_power;  /**< Smartplug  instantaneous power */
     uint32_t run_time;  /**< Smartplug  run time in seconds */
     uint32_t cumu_power;  /**< Smartplug  Cumulative power (0.1Kwh) */
-    uint8_t rssi; /**< Smartplug RSSI */ 
+    int32_t rssi; /**< Smartplug RSSI */ 
 }rbf_smartplug_heartbeat_t;
 
 

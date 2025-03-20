@@ -27,7 +27,7 @@ extern "C"
 typedef struct 
 {
     uint8_t power;  /**< Magnetic sensor battery level 0-100 */
-    uint8_t rssi;   /**< Magnetic sensor RSSI */
+    int32_t rssi;   /**< Magnetic sensor RSSI */
 }rbf_magnetic_heartbeat_t;
 
 

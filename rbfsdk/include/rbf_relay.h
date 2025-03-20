@@ -21,7 +21,7 @@ extern "C"
 typedef struct 
 {
     uint8_t onoff;  /**< Relay output status:  0-off, 1-on */
-    uint8_t rssi;  /**< Relay RSSI */
+    int32_t rssi;  /**< Relay RSSI */
 }rbf_relay_heartbeat_t;
 
 /**

@@ -30,7 +30,7 @@ typedef struct
     uint32_t inst_volt;  /**< Wall switch  instantaneous voltage */
     uint32_t inst_curr;  /**< Wall switch  instantaneous current */
     uint32_t inst_power;  /**< Wall switch  instantaneous power */
-    uint8_t rssi; /**< Wall switch RSSI */
+    int32_t rssi; /**< Wall switch RSSI */
 }rbf_wall_switch_heartbeat_t;
 
 

@@ -36,6 +36,7 @@ void test_setarming(char *argv[], int argc);
 void test_keypad(char *argv[], int argc);
 void test_relay(char *argv[], int argc);
 void test_wall_switch(char *argv[], int argc);
+void test_ota(char *argv[], int argc);
 void test_hub_get_version(void);
 void test_hub_get_noise(void);
 void test_smartplug(char *argv[], int argc);

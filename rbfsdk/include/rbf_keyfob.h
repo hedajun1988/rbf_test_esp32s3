@@ -24,7 +24,7 @@ extern "C"
 typedef struct 
 {
     uint8_t power;  /**< Remote control battery level 0-100 */
-    uint8_t rssi;   /**< Remote control RSSI */
+    int32_t rssi;   /**< Remote control RSSI */
 }rbf_keyfob_heartbeat_t;
 
 

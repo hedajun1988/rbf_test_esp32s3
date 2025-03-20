@@ -26,6 +26,11 @@
 #include "rbf_relay.h"
 #include "rbf_wall_switch.h"
 #include "rbf_smartplug.h"
+#include "rbf_ota.h"
+#define  CONFIG_RPC_ENABLE          0
+#if defined(CONFIG_RPC_ENABLE) && (CONFIG_RPC_ENABLE == 1)
+#include "rpc.h"
+#endif
 
 static int s_newDevice = 0;
 RBF_Freq_t s_setFreq = RBF_FREQ_915;
@@ -39,7 +44,7 @@ int test_rbf_dev_register_reponse(RBF_register_response_t* reponse)
     printf("err:%x\r\n",reponse->err);
 
     printf("sn:");
-    for (int i=0; i<16; i++)
+    for (int i=0; i<RBF_DEVICE_SN_LEN; i++)
     {
         printf("%02X", reponse->sn[i]);
     }
@@ -47,7 +52,7 @@ int test_rbf_dev_register_reponse(RBF_register_response_t* reponse)
 
 
     printf("mac:");
-    for (int i=0; i<32; i++)
+    for (int i=0; i<RBF_DEVICE_MAC_LEN; i++)
     {
         printf("%02X", reponse->mac[i]);
     }
@@ -89,7 +94,13 @@ int test_rbf_ver_info_handle(RBF_hub_sw_ver_t* ver)
 
 int test_rbf_noise_info_handle(RBF_hub_noise_t* noise)
 {
-    printf("Get hub noise: real time noise %d, average noise %d\r\n", noise->realtime_rssi, noise->avg_rssi);
+    printf("Get hub noise: real time noise %ld, average noise %ld\r\n", noise->realtime_rssi, noise->avg_rssi);
+    return 0;
+}
+
+int test_rbf_jamming_handle(bool jamming)
+{
+    printf("Jamming %d\r\n", (jamming == true) ? 1 : 0);
     return 0;
 }
 
@@ -258,7 +269,7 @@ int rbf_indoor_siren_input_status_callback(uint8_t no, rbf_indoor_siren_input_st
 
 int rbf_relay_heartbeat_callback(uint8_t no, rbf_relay_heartbeat_t* heartbeat)
 {
-    printf("Relay [%d] output status:  %d, RSSI: %d\n", no, heartbeat->onoff, heartbeat->rssi);
+    printf("Relay [%d] output status:  %d, RSSI: %ld\n", no, heartbeat->onoff, heartbeat->rssi);
     return 0;
 }
 
@@ -323,6 +334,22 @@ int rbf_smartplug_output_status_callback(uint8_t no, rbf_smartplug_output_status
     return 0;
 }
 
+int rbf_ota_request_upgrade_data_callback(unsigned int offset, unsigned int size, unsigned char* data)
+{
+    printf("OTA request offset: %u, size: %u\n", offset, size);
+#if defined(CONFIG_RPC_ENABLE) && (CONFIG_RPC_ENABLE == 1)
+    return rpc_fw_data_get(offset, size, data);
+#else 
+    return -1;
+#endif
+}
+
+int rbf_ota_upgrade_evt_handle(RBF_ota_evt_t evt, RBF_ota_status_t* status)
+{
+    printf("OTA evt: %u, upgrading: %u, percent: %u\n", evt, status->upgrading, status->percent);
+    return 0;
+}
+
 int test_rbf_init(void)
 {
     RBF_evt_callbacks_t cbs = {0};
@@ -339,6 +366,7 @@ int test_rbf_init(void)
     rbf_relay_callbacks_t relay_cbs = {0};
     rbf_wall_switch_callbacks_t wall_switch_cbs = {0};
     rbf_smartplug_callbacks_t smartplug_cbs = {0};
+    RBF_ota_evt_callbacks_t ota_cbs = {0};
 
     rbf_init();
 
@@ -348,6 +376,7 @@ int test_rbf_init(void)
     cbs.rbf_dev_register_info_handle = &test_rbf_dev_info_handle;
     cbs.rbf_hub_ver_handle = &test_rbf_ver_info_handle;
     cbs.rbf_get_hub_noise = &test_rbf_noise_info_handle;
+    cbs.rbf_jamming_handle = &test_rbf_jamming_handle;
     rbf_register_evt_callback(&cbs);
 
     mc_cbs.hb_cb = &rbf_magnetic_heartbeat_callback;
@@ -402,6 +431,10 @@ int test_rbf_init(void)
     smartplug_cbs.hb_cb = &rbf_smartplug_heartbeat_status_callback;
     smartplug_cbs.output_status_cb = &rbf_smartplug_output_status_callback;
     rbf_smartplug_register_callbacks(&smartplug_cbs);
+
+    ota_cbs.rbf_ota_request_upgrade_data_handle = &rbf_ota_request_upgrade_data_callback;
+    ota_cbs.rbf_ota_evt_handle = &rbf_ota_upgrade_evt_handle;
+    rbf_ota_register_evt_callback(&ota_cbs);
     return 0;
 }
 
@@ -783,6 +816,22 @@ void test_smartplug(char *argv[], int argc)
             ctrl.action = RBF_SMARTPLUG_ACTION_TOOGLE;
             printf("smartplug [%d] set toogle,lock[%d]\r\n", no, lock);
             rbf_smartplug_ctrl(no, &ctrl);
+        }
+    }
+}
+
+void test_ota(char *argv[], int argc)
+{
+    if (argc >= 1)
+    {
+        if (strcmp(argv[0], "start") == 0) 
+        {
+            printf("start ota\r\n");
+            uint32_t fw_size = 0;
+#if defined(CONFIG_RPC_ENABLE) && (CONFIG_RPC_ENABLE == 1)
+            rpc_fw_size_get();
+#endif
+            rbf_ota_start(fw_size);
         }
     }
 }

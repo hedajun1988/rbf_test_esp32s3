@@ -25,7 +25,7 @@ extern "C"
 typedef struct 
 {
     uint8_t power;  /**<  Water leak sensor battery level 0-100 */
-    uint8_t rssi; /**< Water leak sensor RSSI */
+    int32_t rssi; /**< Water leak sensor RSSI */
 }rbf_water_leak_heartbeat_t;
 
 

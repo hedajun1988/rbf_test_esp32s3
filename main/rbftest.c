@@ -27,6 +27,7 @@
 #include "rbf_wall_switch.h"
 #include "rbf_smartplug.h"
 #include "rbf_ota.h"
+#include "rbf_subdev_ota.h"
 #define  CONFIG_RPC_ENABLE          0
 #if defined(CONFIG_RPC_ENABLE) && (CONFIG_RPC_ENABLE == 1)
 #include "rpc.h"
@@ -344,10 +345,37 @@ int rbf_ota_request_upgrade_data_callback(unsigned int offset, unsigned int size
 #endif
 }
 
+
 int rbf_ota_upgrade_evt_handle(RBF_ota_evt_t evt, RBF_ota_status_t* status)
 {
     printf("OTA evt: %u, upgrading: %u, percent: %u\n", evt, status->upgrading, status->percent);
     return 0;
+}
+
+int rbf_subdev_ota_upgrade_evt_handle(RBF_subdev_ota_evt_t evt, RBF_subdev_ota_faild_response_t* responses, uint8_t response_count)
+{
+    if (evt == RBF_SUBDEV_OTA_EVT_UPGRADE_COMPLETE) {
+        printf("subdev OTA sucess\n");
+    } else if (evt == RBF_SUBDEV_OTA_EVT_UPGRADE_REQUEST_TIMEOUT) {
+        printf("subdev OTA request timeout\n");
+    } else if (evt == RBF_SUBDEV_OTA_EVT_UPGRADE_FAIL) {
+        printf("[%d] subdev OTA failed\n", response_count);
+        for (uint8_t i=0; i<response_count; i++) {
+            printf("subdev no: %d\n", responses[i].devno);
+            printf("subdev errorcode: %d\n", responses[i].errorcode);
+        }
+    }
+    return 0;
+}
+
+int rbf_subdev_ota_request_upgrade_data_callback(unsigned int offset, unsigned int size, unsigned char* data)
+{
+    printf("Subdev OTA request offset: %u, size: %u\n", offset, size);
+#if defined(CONFIG_RPC_ENABLE) && (CONFIG_RPC_ENABLE == 1)
+    return rpc_subdev_fw_data_get(offset, size, data);
+#else 
+    return -1;
+#endif
 }
 
 int test_rbf_init(void)
@@ -367,6 +395,7 @@ int test_rbf_init(void)
     rbf_wall_switch_callbacks_t wall_switch_cbs = {0};
     rbf_smartplug_callbacks_t smartplug_cbs = {0};
     RBF_ota_evt_callbacks_t ota_cbs = {0};
+    RBF_subdev_ota_evt_callbacks_t subdev_ota_cbs = {0};
 
     rbf_init();
 
@@ -435,6 +464,10 @@ int test_rbf_init(void)
     ota_cbs.rbf_ota_request_upgrade_data_handle = &rbf_ota_request_upgrade_data_callback;
     ota_cbs.rbf_ota_evt_handle = &rbf_ota_upgrade_evt_handle;
     rbf_ota_register_evt_callback(&ota_cbs);
+
+    subdev_ota_cbs.rbf_subdev_ota_request_upgrade_data_handle = &rbf_subdev_ota_request_upgrade_data_callback;
+    subdev_ota_cbs.rbf_subdev_ota_evt_handle = &rbf_subdev_ota_upgrade_evt_handle;
+    rbf_subdev_ota_register_evt_callback(&subdev_ota_cbs);
     return 0;
 }
 
@@ -833,6 +866,28 @@ void test_ota(char *argv[], int argc)
 #endif
             rbf_ota_start(fw_size);
         }
+    }
+}
+
+void test_subdev_ota(char *argv[], int argc)
+{
+    if (argc >= 3)
+    {
+        uint8_t cat = atoi(argv[0]);
+        uint8_t start_no = atoi(argv[1]);
+        uint8_t count = atoi(argv[2]);
+        uint32_t fw_size = 0;
+        uint8_t no_list[12];
+
+        printf("start subdev ota: cat_id %d, start_no %d, count %d\r\n", cat, start_no, count);
+
+#if defined(CONFIG_RPC_ENABLE) && (CONFIG_RPC_ENABLE == 1)
+        fw_size = rpc_subdev_fw_size_get();
+#endif
+        for (uint8_t i=0; i<count; i++) {
+            no_list[i] = start_no + i;
+        }
+        rbf_subdev_ota_start(cat, no_list, count, fw_size);
     }
 }
 

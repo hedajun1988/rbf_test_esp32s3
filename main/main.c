@@ -645,6 +645,37 @@ static int do_test_ota(int argc, char **argv)
     test_ota(ota, 1);
     return 0;
 }
+
+static struct {
+     struct arg_str *cat_id;
+     struct arg_str *start_no;
+     struct arg_str *count;
+     struct arg_end *end;
+}subdev_ota_args;
+
+static int do_test_subdev_ota(int argc, char **argv)
+{
+    char* subdev_ota[3];
+    int nerrors = arg_parse(argc, argv, (void **) &subdev_ota_args);
+    if (nerrors != 0) 
+    {
+        arg_print_errors(stderr, subdev_ota_args.end, argv[0]);
+        return 0;
+    }
+
+    strcpy(&rbf_args[0][0], subdev_ota_args.cat_id->sval[0]);
+    subdev_ota[0] = &rbf_args[0][0];
+
+    strcpy(&rbf_args[1][0], subdev_ota_args.start_no->sval[0]);
+    subdev_ota[1] = &rbf_args[1][0];
+
+    strcpy(&rbf_args[2][0], subdev_ota_args.count->sval[0]);
+    subdev_ota[2] = &rbf_args[2][0];
+
+    test_subdev_ota(subdev_ota, 3);
+    return 0;
+}
+
 /* test cmds */
 const esp_console_cmd_t cmds[] = {
     {
@@ -772,6 +803,13 @@ const esp_console_cmd_t cmds[] = {
         .command = "ota",
         .argtable = &ota_args
     },
+    {
+        .help = "subdev ota test",
+        .hint = NULL,
+        .func = do_test_subdev_ota,
+        .command = "subdevota",
+        .argtable = &subdev_ota_args
+    },
 };
 
 esp_err_t app_console_init(void)
@@ -856,6 +894,11 @@ esp_err_t app_console_init(void)
 
     ota_args.start = arg_lit0(NULL, "start",  "start ota upgrade");
     ota_args.end = arg_end(1);
+
+    subdev_ota_args.cat_id = arg_str1(NULL, NULL,"<CAT_ID>", "cat id: 1-io 2-sounder 3-keypad 4-keyfob");
+    subdev_ota_args.start_no = arg_str1(NULL, NULL,"<DEV_NUM>", "start device number");
+    subdev_ota_args.count = arg_str1(NULL, NULL,"<DEV_CNT>", "0:off, 1:on");
+    subdev_ota_args.end = arg_end(3);
 
     for (int i=0; i<sizeof(cmds)/sizeof(esp_console_cmd_t); i++)
     {
